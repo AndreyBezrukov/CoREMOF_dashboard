@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jun 28 16:42:26 2020
-
 @author: Andrey.Bezrukov
 """
 
-# -*- coding: utf-8 -*-
+import os
+
 import dash
 import dash_core_components as dcc
-from dash.dependencies import Input, Output
 import dash_html_components as html
+from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import pandas as pd
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+server = app.server
 
 # file location and name
 filepath = '2019-11-01-ASR-public_12020.csv'
@@ -209,4 +212,4 @@ def update_figure(selected_all_metal, selected_ASA, selected_dis, selected_oms )
     return fig
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
