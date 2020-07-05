@@ -1,4 +1,4 @@
-## CoREMOF_dashboard
+## CoREMOF dashboard
 Dashboard to explore Computation-Ready, Experimental Metal−Organic Framework (CoRE MOF) database.
 
 ### Data source
