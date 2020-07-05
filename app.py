@@ -29,12 +29,26 @@ df['disorder'] = df.DISORDER.apply(lambda x: 'Yes' if x=='DISORDER' else 'No')
 df.LCD = df.LCD.round(2)
 df.PLD = df.PLD.round(2)
 
+axis_label_dict = {
+            'LCD':u'Largest Cavity Diameter, Å', 
+            'PLD':u'Pore Limiting Diameter, Å', 
+            'LFPD':u'Largest Cavity Diameter, Å', 
+            'cm3_g':'Density, cm3/g', 
+            'ASA_m2_cm3':'Available Surface Area, m2/cm3' ,
+            'ASA_m2_g':'Available Surface Area, m2/g',
+            'NASA_m2_cm3':'Not Available Surface Area, m2/cm3', 
+            'NASA_m2_g':'Not Available Surface Area, m2/g',
+            'AV_VF':'Available Volume Fraction', 
+            'AV_cm3_g':'Available Volume cm3/g', 
+            'NAV_cm3_g':'Not Available Volume cm3/g'
+            }
+
 #print(sorted(list(set( [item for sublist in df['All_Metals'].values for item in sublist.split(',')] ))))
 
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=df.LCD, y=df.PLD,
                          text=df.filename, mode='markers',
-                         marker=dict(line_width=1,colorscale='Viridis', showscale=True, color=df.ASA_m2_g, colorbar=dict(title='ASA, m2/g'),),
+                         marker=dict(line_width=1,colorscale='Viridis', showscale=True, color=df.ASA_m2_g, colorbar=dict(title='Available Surface Area, m2/g'),),
                          )),
 fig.update_layout(
 xaxis = dict(
@@ -51,6 +65,60 @@ app.layout = html.Div(children=[
         Explore 12000+ Computation-Ready, Experimental Metal−Organic Framework structures deposited in the database.  
     '''),
     html.Label([html.A('CoREMOF 2019 reference', href='https://pubs.acs.org/doi/pdf/10.1021/acs.jced.9b00835')]),
+    html.Label('X Axis:'),
+    dcc.Dropdown(
+        id='xaxis_selection',
+        options=[
+                {'label': 'Largest Cavity Diameter', 'value': 'LCD'  }  ,
+                {'label': 'Pore Limiting Diameter', 'value': 'PLD'  }  ,
+                {'label': 'Largest Cavity Diameter', 'value': 'LFPD'  }  ,
+                {'label': 'Density', 'value': 'cm3_g'  }  ,
+                {'label': 'Available Surface Area m2/cm3', 'value': 'ASA_m2_cm3'  }  ,
+                {'label': 'Available Surface Area m2/g', 'value': 'ASA_m2_g'  }  ,
+                {'label': 'Not Available Surface Area m2/cm3', 'value': 'NASA_m2_cm3'  }  ,
+                {'label': 'Not Available Surface Area m2/g', 'value': 'NASA_m2_g'  }  ,
+                {'label': 'Available Volume Fraction', 'value': 'AV_VF'  }  ,
+                {'label': 'Available Volume cm3/g', 'value': 'AV_cm3_g'  }  ,
+                {'label': 'Not Available Volume cm3/g', 'value': 'NAV_cm3_g'  }  ,
+        ],
+        value='LCD'
+    ),
+    html.Label('Y Axis:'),
+    dcc.Dropdown(
+        id='yaxis_selection',
+        options=[
+                {'label': 'Largest Cavity Diameter', 'value': 'LCD'  }  ,
+                {'label': 'Pore Limiting Diameter', 'value': 'PLD'  }  ,
+                {'label': 'Largest Cavity Diameter', 'value': 'LFPD'  }  ,
+                {'label': 'Density', 'value': 'cm3_g'  }  ,
+                {'label': 'Available Surface Area m2/cm3', 'value': 'ASA_m2_cm3'  }  ,
+                {'label': 'Available Surface Area m2/g', 'value': 'ASA_m2_g'  }  ,
+                {'label': 'Not Available Surface Area m2/cm3', 'value': 'NASA_m2_cm3'  }  ,
+                {'label': 'Not Available Surface Area m2/g', 'value': 'NASA_m2_g'  }  ,
+                {'label': 'Available Volume Fraction', 'value': 'AV_VF'  }  ,
+                {'label': 'Available Volume cm3/g', 'value': 'AV_cm3_g'  }  ,
+                {'label': 'Not Available Volume cm3/g', 'value': 'NAV_cm3_g'  }  ,
+        ],
+        value='PLD'
+    ),
+    html.Label('Z Axis:'),
+    dcc.Dropdown(
+        id='zaxis_selection',
+        options=[
+                {'label': 'Largest Cavity Diameter', 'value': 'LCD'  }  ,
+                {'label': 'Pore Limiting Diameter', 'value': 'PLD'  }  ,
+                {'label': 'Largest Cavity Diameter', 'value': 'LFPD'  }  ,
+                {'label': 'Density', 'value': 'cm3_g'  }  ,
+                {'label': 'Available Surface Area m2/cm3', 'value': 'ASA_m2_cm3'  }  ,
+                {'label': 'Available Surface Area m2/g', 'value': 'ASA_m2_g'  }  ,
+                {'label': 'Not Available Surface Area m2/cm3', 'value': 'NASA_m2_cm3'  }  ,
+                {'label': 'Not Available Surface Area m2/g', 'value': 'NASA_m2_g'  }  ,
+                {'label': 'Available Volume Fraction', 'value': 'AV_VF'  }  ,
+                {'label': 'Available Volume cm3/g', 'value': 'AV_cm3_g'  }  ,
+                {'label': 'Not Available Volume cm3/g', 'value': 'NAV_cm3_g'  }  ,
+        ],
+        value='ASA_m2_g'
+    ),
     html.Label('Metal in the structure:'),
     dcc.Dropdown(
         id='all_metal-dropdown',
@@ -157,56 +225,63 @@ app.layout = html.Div(children=[
         id='graph',
         figure=fig
     ),
-    html.Label('Available Surface area (ASA), m2/g'),
+    
+    html.Label('Z axis range slider'),
     dcc.RangeSlider(
-        id='ASA-slider',
+        id='Z-slider',
         min=df.ASA_m2_g.min(),
         max=df.ASA_m2_g.max(),
         allowCross=False,
         value=[df.ASA_m2_g.min(), df.ASA_m2_g.max()],
-        marks={
-        df.ASA_m2_g.min(): {'label': str(round(df.ASA_m2_g.min())) },
-        df.ASA_m2_g.min()+0.1*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.1*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.2*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.2*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.3*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.3*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.4*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.4*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.5*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.5*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.6*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.6*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.7*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.7*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.8*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.8*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.min()+0.9*(df.ASA_m2_g.max()-df.ASA_m2_g.min()): {'label': str(round(df.ASA_m2_g.min()+0.9*(df.ASA_m2_g.max()-df.ASA_m2_g.min())))},
-        df.ASA_m2_g.max(): {'label': str(round(df.ASA_m2_g.max()))}
-        }
+        marks=dict(zip([df.ASA_m2_g.min()+j/10*(df.ASA_m2_g.max()-df.ASA_m2_g.min()) for j in range(10)], [{'label':str(round(i))} for i in [df.ASA_m2_g.min()+j/10*(df.ASA_m2_g.max()-df.ASA_m2_g.min()) for j in range(10)]]))
     )
 ])
 
+@app.callback( 
+    [Output(component_id='Z-slider', component_property='min'),
+     Output(component_id='Z-slider', component_property='max'),
+     Output(component_id='Z-slider', component_property='marks'),
+     Output(component_id='Z-slider', component_property='step'),
+    ],
+    [Input('zaxis_selection', 'value'),]
+    )
+def fill_second_slider(selected_zaxis):
+     return df[selected_zaxis].min(), df[selected_zaxis].max(), dict(zip([df[selected_zaxis].min()+j/10*(df[selected_zaxis].max()-df[selected_zaxis].min()) for j in range(10)], [{'label':str(round(i, 1))} for i in [df[selected_zaxis].min()+j/10*(df[selected_zaxis].max()-df[selected_zaxis].min()) for j in range(10)]])), (df[selected_zaxis].max()-df[selected_zaxis].min())/300
 
 @app.callback(
     Output('graph', 'figure'),
+     
     [
+    Input('xaxis_selection', 'value'),
+    Input('yaxis_selection', 'value'),
+    Input('zaxis_selection', 'value'),
     Input('all_metal-dropdown', 'value'),
-    Input('ASA-slider', 'value'),
+    Input('Z-slider', 'value'),
     Input('dis-checkbox', 'value'),
     Input('oms-checkbox', 'value'),
     ])
-def update_figure(selected_all_metal, selected_ASA, selected_dis, selected_oms ):
+def update_figure(selected_xaxis, selected_yaxis, selected_zaxis, selected_all_metal, selected_Z, selected_dis, selected_oms ):
     filtered_df = df[([any([item for item in sublist.split(',') if item in selected_all_metal]) for sublist in df['All_Metals'].values])&
-                     (df.ASA_m2_g >= selected_ASA[0])&
-                     (df.ASA_m2_g <= selected_ASA[1])&
+                     (df[selected_zaxis] >= selected_Z[0])&
+                     (df[selected_zaxis] <= selected_Z[1])&
                      (df.disorder.isin(selected_dis))&
                      (df.Has_OMS.isin(selected_oms))]
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=filtered_df.LCD, y=filtered_df.PLD,
                          text=filtered_df.filename, mode='markers',
-                         marker=dict(line_width=1,colorscale='Viridis', showscale=True, color=filtered_df.ASA_m2_g, colorbar=dict(title='ASA, m2/g'),),
+                         marker=dict(line_width=1,colorscale='Viridis', showscale=True, color=filtered_df[selected_zaxis], colorbar=dict(title=axis_label_dict[selected_zaxis]),),
                          )),
+    scatter = fig.data[0]
+    scatter.x = filtered_df[selected_xaxis]
+    scatter.y = filtered_df[selected_yaxis]
+
     fig.update_layout(
     xaxis = dict(
-        title_text = u"Largest Cavity Diameter, Å",
+        title_text = axis_label_dict[selected_xaxis],
         title_font = {"size": 20},),
     yaxis = dict(
-        title_text = u"Pore Limiting Diameter, Å",
+        title_text = axis_label_dict[selected_yaxis],
         title_font = {"size": 20}
     ))
     return fig
