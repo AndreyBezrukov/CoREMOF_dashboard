@@ -4,8 +4,6 @@ Created on Sun Jun 28 16:42:26 2020
 @author: Andrey.Bezrukov
 """
 
-import os
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -22,17 +20,15 @@ server = app.server
 # file location and name
 filepath = '2019-11-01-ASR-public_12020.csv'
 
-# import data and clean
+# import and clean data
 df = pd.read_csv(filepath)
 
 df['disorder'] = df.DISORDER.apply(lambda x: 'Yes' if x=='DISORDER' else 'No')
-df.LCD = df.LCD.round(2)
-df.PLD = df.PLD.round(2)
 
 axis_label_dict = {
             'LCD':u'Largest Cavity Diameter, Å', 
             'PLD':u'Pore Limiting Diameter, Å', 
-            'LFPD':u'Largest Cavity Diameter, Å', 
+            'LFPD':u'Largest Free Path Diameter, Å', 
             'cm3_g':'Density, cm3/g', 
             'ASA_m2_cm3':'Available Surface Area, m2/cm3' ,
             'ASA_m2_g':'Available Surface Area, m2/g',
@@ -43,35 +39,24 @@ axis_label_dict = {
             'NAV_cm3_g':'Not Available Volume cm3/g'
             }
 
+# create list of metals
 #print(sorted(list(set( [item for sublist in df['All_Metals'].values for item in sublist.split(',')] ))))
 
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=df.LCD, y=df.PLD,
-                         text=df.filename, mode='markers',
-                         marker=dict(line_width=1,colorscale='Viridis', showscale=True, color=df.ASA_m2_g, colorbar=dict(title='Available Surface Area, m2/g'),),
-                         )),
-fig.update_layout(
-xaxis = dict(
-        title_text = u"Largest Cavity Diameter, Å",
-        title_font = {"size": 20},),
-yaxis = dict(
-        title_text = u"Pore Limiting Diameter, Å",
-        title_font = {"size": 20}
-    ))
-
+# app
 app.layout = html.Div(children=[
-    html.H1(children='CoREMOF database dashboard'),
+    html.H1(children='CoRE MOF database dashboard'),
     html.Div(children='''
-        Explore 12000+ Computation-Ready, Experimental Metal−Organic Framework structures deposited in the database.  
+        Explore properties of 12000+ Computation-Ready, Experimental Metal−Organic Framework structures deposited in the database.  
     '''),
-    html.Label([html.A('CoREMOF 2019 reference', href='https://pubs.acs.org/doi/pdf/10.1021/acs.jced.9b00835')]),
+    html.Label([html.A('CoRE MOF 2019 reference', href='https://pubs.acs.org/doi/pdf/10.1021/acs.jced.9b00835')]),
+    html.Label([html.A('Source code for this dashboard', href='https://github.com/AndreyBezrukov/CoREMOF_dashboard')]),
     html.Label('X Axis:'),
     dcc.Dropdown(
         id='xaxis_selection',
         options=[
                 {'label': 'Largest Cavity Diameter', 'value': 'LCD'  }  ,
                 {'label': 'Pore Limiting Diameter', 'value': 'PLD'  }  ,
-                {'label': 'Largest Cavity Diameter', 'value': 'LFPD'  }  ,
+                {'label': 'Largest Free Path Diameter', 'value': 'LFPD'  }  ,
                 {'label': 'Density', 'value': 'cm3_g'  }  ,
                 {'label': 'Available Surface Area m2/cm3', 'value': 'ASA_m2_cm3'  }  ,
                 {'label': 'Available Surface Area m2/g', 'value': 'ASA_m2_g'  }  ,
@@ -89,7 +74,7 @@ app.layout = html.Div(children=[
         options=[
                 {'label': 'Largest Cavity Diameter', 'value': 'LCD'  }  ,
                 {'label': 'Pore Limiting Diameter', 'value': 'PLD'  }  ,
-                {'label': 'Largest Cavity Diameter', 'value': 'LFPD'  }  ,
+                {'label': 'Largest Free Path Diameter', 'value': 'LFPD'  }  ,
                 {'label': 'Density', 'value': 'cm3_g'  }  ,
                 {'label': 'Available Surface Area m2/cm3', 'value': 'ASA_m2_cm3'  }  ,
                 {'label': 'Available Surface Area m2/g', 'value': 'ASA_m2_g'  }  ,
@@ -107,7 +92,7 @@ app.layout = html.Div(children=[
         options=[
                 {'label': 'Largest Cavity Diameter', 'value': 'LCD'  }  ,
                 {'label': 'Pore Limiting Diameter', 'value': 'PLD'  }  ,
-                {'label': 'Largest Cavity Diameter', 'value': 'LFPD'  }  ,
+                {'label': 'Largest Free Path Diameter', 'value': 'LFPD'  }  ,
                 {'label': 'Density', 'value': 'cm3_g'  }  ,
                 {'label': 'Available Surface Area m2/cm3', 'value': 'ASA_m2_cm3'  }  ,
                 {'label': 'Available Surface Area m2/g', 'value': 'ASA_m2_g'  }  ,
@@ -122,73 +107,17 @@ app.layout = html.Div(children=[
     html.Label('Metal in the structure:'),
     dcc.Dropdown(
         id='all_metal-dropdown',
-        options=[
-                {'label': 'Ag', 'value': 'Ag'  }  ,
-                {'label': 'Al', 'value': 'Al'  }  ,
-                {'label': 'As', 'value': 'As'  }  ,
-                {'label': 'Au', 'value': 'Au'  }  ,
-                {'label': 'Ba', 'value': 'Ba'  }  ,
-                {'label': 'Be', 'value': 'Be'  }  ,
-                {'label': 'Bi', 'value': 'Bi'  }  ,
-                {'label': 'Ca', 'value': 'Ca'  }  ,
-                {'label': 'Cd', 'value': 'Cd'  }  ,
-                {'label': 'Ce', 'value': 'Ce'  }  ,
-                {'label': 'Co', 'value': 'Co'  }  ,
-                {'label': 'Cr', 'value': 'Cr'  }  ,
-                {'label': 'Cs', 'value': 'Cs'  }  ,
-                {'label': 'Cu', 'value': 'Cu'  }  ,
-                {'label': 'Dy', 'value': 'Dy'  }  ,
-                {'label': 'Er', 'value': 'Er'  }  ,
-                {'label': 'Eu', 'value': 'Eu'  }  ,
-                {'label': 'Fe', 'value': 'Fe'  }  ,
-                {'label': 'Ga', 'value': 'Ga'  }  ,
-                {'label': 'Gd', 'value': 'Gd'  }  ,
-                {'label': 'Ge', 'value': 'Ge'  }  ,
-                {'label': 'Hf', 'value': 'Hf'  }  ,
-                {'label': 'Hg', 'value': 'Hg'  }  ,
-                {'label': 'Ho', 'value': 'Ho'  }  ,
-                {'label': 'In', 'value': 'In'  }  ,
-                {'label': 'Ir', 'value': 'Ir'  }  ,
-                {'label': 'K', 'value': 'K'    },
-                {'label': 'La', 'value': 'La'  }  ,
-                {'label': 'Li', 'value': 'Li'  }  ,
-                {'label': 'Lu', 'value': 'Lu'  }  ,
-                {'label': 'Mg', 'value': 'Mg'  }  ,
-                {'label': 'Mn', 'value': 'Mn'  }  ,
-                {'label': 'Mo', 'value': 'Mo'  }  ,
-                {'label': 'Na', 'value': 'Na'  }  ,
-                {'label': 'Nb', 'value': 'Nb'  }  ,
-                {'label': 'Nd', 'value': 'Nd'  }  ,
-                {'label': 'Ni', 'value': 'Ni'  }  ,
-                {'label': 'Np', 'value': 'Np'  }  ,
-                {'label': 'Pb', 'value': 'Pb'  }  ,
-                {'label': 'Pd', 'value': 'Pd'  }  ,
-                {'label': 'Pr', 'value': 'Pr'  }  ,
-                {'label': 'Pt', 'value': 'Pt'  }  ,
-                {'label': 'Pu', 'value': 'Pu'  }  ,
-                {'label': 'Rb', 'value': 'Rb'  }  ,
-                {'label': 'Re', 'value': 'Re'  }  ,
-                {'label': 'Rh', 'value': 'Rh'  }  ,
-                {'label': 'Ru', 'value': 'Ru'  }  ,
-                {'label': 'Sb', 'value': 'Sb'  }  ,
-                {'label': 'Sc', 'value': 'Sc'  }  ,
-                {'label': 'Si', 'value': 'Si'  }  ,
-                {'label': 'Sm', 'value': 'Sm'  }  ,
-                {'label': 'Sn', 'value': 'Sn'  }  ,
-                {'label': 'Sr', 'value': 'Sr'  }  ,
-                {'label': 'Tb', 'value': 'Tb'  }  ,
-                {'label': 'Te', 'value': 'Te'  }  ,
-                {'label': 'Th', 'value': 'Th'  }  ,
-                {'label': 'Ti', 'value': 'Ti'  }  ,
-                {'label': 'Tm', 'value': 'Tm'  }  ,
-                {'label': 'U', 'value': 'U'    },
-                {'label': 'V', 'value': 'V'    },
-                {'label': 'W', 'value': 'W'    },
-                {'label': 'Y', 'value': 'Y'    },
-                {'label': 'Yb', 'value': 'Yb'  }  ,
-                {'label': 'Zn', 'value': 'Zn'  }  ,
-                {'label': 'Zr', 'value': 'Zr'  }  ,
-        ],
+        options= [{'label': i, 'value': i  } for i in ['Ag', 'Al', 'As', 'Au', 'Ba', 'Be', 
+                                                         'Bi', 'Ca', 'Cd', 'Ce', 'Co', 'Cr', 
+                                                         'Cs', 'Cu', 'Dy', 'Er', 'Eu', 'Fe', 
+                                                         'Ga', 'Gd', 'Ge', 'Hf', 'Hg', 'Ho', 
+                                                         'In', 'Ir', 'K', 'La', 'Li', 'Lu',  
+                                                         'Mg', 'Mn', 'Mo', 'Na', 'Nb', 'Nd', 
+                                                         'Ni', 'Np', 'Pb', 'Pd', 'Pr', 'Pt', 
+                                                         'Pu', 'Rb', 'Re', 'Rh', 'Ru', 'Sb', 
+                                                         'Sc', 'Si', 'Sm', 'Sn', 'Sr', 'Tb', 
+                                                         'Te', 'Th', 'Ti', 'Tm', 'U',  'V', 
+                                                         'W', 'Y', 'Yb', 'Zn', 'Zr']],
         multi=True,
         value=['Ag', 'Al', 'As', 'Au', 'Ba', 'Be', 
                'Bi', 'Ca', 'Cd', 'Ce', 'Co', 'Cr', 
@@ -222,8 +151,7 @@ app.layout = html.Div(children=[
     ),
     
     dcc.Graph(
-        id='graph',
-        figure=fig
+        id='graph'
     ),
     
     html.Label('Z axis range slider'),
@@ -245,7 +173,7 @@ app.layout = html.Div(children=[
     ],
     [Input('zaxis_selection', 'value'),]
     )
-def fill_second_slider(selected_zaxis):
+def update_slider(selected_zaxis):
      return df[selected_zaxis].min(), df[selected_zaxis].max(), dict(zip([df[selected_zaxis].min()+j/10*(df[selected_zaxis].max()-df[selected_zaxis].min()) for j in range(10)], [{'label':str(round(i, 1))} for i in [df[selected_zaxis].min()+j/10*(df[selected_zaxis].max()-df[selected_zaxis].min()) for j in range(10)]])), (df[selected_zaxis].max()-df[selected_zaxis].min())/300
 
 @app.callback(
@@ -268,14 +196,10 @@ def update_figure(selected_xaxis, selected_yaxis, selected_zaxis, selected_all_m
                      (df.Has_OMS.isin(selected_oms))]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=filtered_df.LCD, y=filtered_df.PLD,
+    fig.add_trace(go.Scatter(x=filtered_df[selected_xaxis], y=filtered_df[selected_yaxis],
                          text=filtered_df.filename, mode='markers',
                          marker=dict(line_width=1,colorscale='Viridis', showscale=True, color=filtered_df[selected_zaxis], colorbar=dict(title=axis_label_dict[selected_zaxis]),),
                          )),
-    scatter = fig.data[0]
-    scatter.x = filtered_df[selected_xaxis]
-    scatter.y = filtered_df[selected_yaxis]
-
     fig.update_layout(
     xaxis = dict(
         title_text = axis_label_dict[selected_xaxis],
